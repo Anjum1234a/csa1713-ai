@@ -1,0 +1,62 @@
+% --- Knowledge Base: Diseases and Their Symptoms ---
+
+disease(flu) :-
+    has_symptom(fever),
+    has_symptom(cough),
+    has_symptom(sore_throat),
+    has_symptom(body_ache).
+
+disease(cold) :-
+    has_symptom(cough),
+    has_symptom(sneezing),
+    has_symptom(runny_nose).
+
+disease(covid19) :-
+    has_symptom(fever),
+    has_symptom(cough),
+    has_symptom(shortness_of_breath),
+    has_symptom(loss_of_taste_smell).
+
+disease(allergy) :-
+    has_symptom(sneezing),
+    has_symptom(runny_nose),
+    has_symptom(watery_eyes).
+
+% --- Ask about symptoms dynamically and store answers ---
+
+:- dynamic(has_symptom/1).
+
+ask(Symptom) :-
+    format('Do you have ~w? (yes/no): ', [Symptom]),
+    read(Response),
+    (Response == yes -> assertz(has_symptom(Symptom)); true).
+
+% --- Main diagnosis routine ---
+
+diagnose :-
+    retractall(has_symptom(_)),  % Clear previous symptoms
+    symptom_list(Symptoms),
+    ask_all(Symptoms),
+    (disease(D) ->
+        format('You might have: ~w.~n', [D])
+    ;
+        write('Sorry, your illness could not be diagnosed based on the symptoms.'), nl
+    ).
+
+ask_all([]).
+ask_all([H | T]) :-
+    ask(H),
+    ask_all(T).
+
+% --- List of all known symptoms to ask the user about ---
+symptom_list([
+    fever,
+    cough,
+    sore_throat,
+    body_ache,
+    sneezing,
+    runny_nose,
+    shortness_of_breath,
+    loss_of_taste_smell,
+    watery_eyes
+]).

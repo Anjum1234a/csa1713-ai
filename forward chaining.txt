@@ -1,0 +1,73 @@
+% --- Dynamic facts for storing observations and derived facts ---
+:- dynamic known/1.
+
+% --- Rules: Forward-chaining inference engine ---
+rule(mammal) :-
+    known(has_hair).
+rule(mammal) :-
+    known(gives_milk).
+
+rule(bird) :-
+    known(has_feathers).
+rule(bird) :-
+    known(lays_eggs),
+    known(flies).
+
+rule(cat) :-
+    known(mammal),
+    known(meows),
+    known(hunts_mice).
+
+rule(eagle) :-
+    known(bird),
+    known(has_sharp_vision).
+
+rule(bat) :-
+    known(mammal),
+    known(flies),
+    known(nocturnal).
+
+% --- Forward chaining engine: keeps applying rules until nothing new is added ---
+forward_chain :-
+    retractall(known(_)),
+    input_facts,
+    infer,
+    nl, write('Inferred Facts: '), nl,
+    list_known.
+
+% --- Loop through rules and assert new facts ---
+infer :-
+    (   apply_rule
+    ->  infer
+    ;   true).
+
+apply_rule :-
+    rule(Fact),
+    \+ known(Fact),
+    assertz(known(Fact)),
+    format('Derived: ~w~n', [Fact]),
+    true.
+
+% --- Ask user for base facts ---
+input_facts :-
+    ask(has_hair),
+    ask(gives_milk),
+    ask(has_feathers),
+    ask(lays_eggs),
+    ask(flies),
+    ask(meows),
+    ask(hunts_mice),
+    ask(has_sharp_vision),
+    ask(nocturnal).
+
+ask(Feature) :-
+    format('Does the animal have the following feature: ~w? (yes/no): ', [Feature]),
+    read(Response),
+    (Response == yes -> assertz(known(Feature)); true).
+
+% --- Print all known facts ---
+list_known :-
+    known(F),
+    write(F), nl,
+    fail.
+list_known.
